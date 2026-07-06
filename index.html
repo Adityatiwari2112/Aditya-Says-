@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aditya Says Challenge</title>
+<meta name="description" content="A modern reflex and memory arcade game — how many levels can you remember?" />
+
+<!-- Google Fonts: Orbitron for display/arcade numerals, Space Grotesk for body/UI -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- Animated background layer (pure CSS, sits behind everything) -->
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="bg-glow" aria-hidden="true"></div>
+
+<!-- Top utility bar: theme + sound toggles, available on every screen -->
+<header class="utility-bar">
+  <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle light and dark mode" title="Toggle theme">
+    <span class="icon-moon">🌙</span>
+    <span class="icon-sun">☀️</span>
+  </button>
+  <button id="soundToggle" class="icon-btn" type="button" aria-label="Toggle sound effects" title="Toggle sound">
+    <span class="icon-sound-on">🔊</span>
+    <span class="icon-sound-off">🔇</span>
+  </button>
+</header>
+
+<main id="app">
+
+  <!-- ============ SCREEN 1: LANDING ============ -->
+  <section id="landingScreen" class="screen landing-screen" aria-labelledby="gameTitle">
+
+    <div class="landing-card">
+
+      <!-- Signature element: circuit emblem made of the 4 pad colors -->
+      <div class="hero-emblem" aria-hidden="true">
+        <span class="emblem-pad emblem-red"></span>
+        <span class="emblem-pad emblem-yellow"></span>
+        <span class="emblem-pad emblem-purple"></span>
+        <span class="emblem-pad emblem-green"></span>
+        <span class="emblem-core"></span>
+      </div>
+
+      <p class="eyebrow">REFLEX &middot; MEMORY &middot; PATTERN RECALL</p>
+      <h1 id="gameTitle" class="hero-title">Aditya Says<span class="hero-title-accent">Challenge</span></h1>
+      <p class="hero-sub">Watch the sequence. Repeat it back. Each round adds one more step — see how far your memory can take you.</p>
+
+      <form id="playerForm" class="player-form" novalidate>
+        <label for="playerNameInput" class="field-label">Player Name</label>
+        <input
+          type="text"
+          id="playerNameInput"
+          class="player-input"
+          placeholder="Enter your name"
+          maxlength="16"
+          autocomplete="off"
+        />
+        <p id="nameError" class="field-error" role="alert"></p>
+
+        <fieldset class="difficulty-fieldset">
+          <legend class="field-label">Difficulty</legend>
+          <div class="difficulty-options" id="difficultyOptions">
+            <button type="button" class="difficulty-btn" data-difficulty="easy">
+              <span class="diff-name">Easy</span><span class="diff-meta">700ms</span>
+            </button>
+            <button type="button" class="difficulty-btn active" data-difficulty="medium">
+              <span class="diff-name">Medium</span><span class="diff-meta">450ms</span>
+            </button>
+            <button type="button" class="difficulty-btn" data-difficulty="hard">
+              <span class="diff-name">Hard</span><span class="diff-meta">280ms</span>
+            </button>
+          </div>
+        </fieldset>
+
+        <button type="submit" class="btn-primary start-btn">
+          <span>Start Game</span>
+        </button>
+      </form>
+
+      <button id="viewLeaderboardLanding" class="btn-text" type="button">View Leaderboard →</button>
+    </div>
+  </section>
+
+  <!-- ============ SCREEN 2: GAMEPLAY ============ -->
+  <section id="gameScreen" class="screen game-screen hidden" aria-labelledby="statusHeading">
+
+    <!-- HUD: player info shown during gameplay -->
+    <div class="hud" role="status">
+      <div class="hud-stat">
+        <span class="hud-label">Player</span>
+        <span class="hud-value" id="hudPlayerName">—</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-label">Level</span>
+        <span class="hud-value hud-value--accent" id="hudLevel">0</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-label">Score</span>
+        <span class="hud-value" id="hudScore">0</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-label">High Score</span>
+        <span class="hud-value hud-value--gold" id="hudHighScore">0</span>
+      </div>
+      <button id="pauseBtn" class="btn-secondary hud-pause" type="button">Pause</button>
+    </div>
+
+    <!-- Progress indicator toward next milestone -->
+    <div class="progress-track" aria-hidden="true">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <h2 id="statusHeading" class="status-heading">Press any key to begin</h2>
+
+    <!-- Game pad cluster: the signature circuit-diamond layout -->
+    <div class="pad-cluster">
+      <svg class="trace-lines" id="traceLines" viewBox="0 0 320 320" aria-hidden="true">
+        <line x1="160" y1="60" x2="160" y2="160" class="trace trace-red" />
+        <line x1="260" y1="160" x2="160" y2="160" class="trace trace-yellow" />
+        <line x1="160" y1="260" x2="160" y2="160" class="trace trace-green" />
+        <line x1="60" y1="160" x2="160" y2="160" class="trace trace-purple" />
+      </svg>
+
+      <button type="button" class="btn pad-red" id="red" aria-label="Red pad"></button>
+      <button type="button" class="btn pad-yellow" id="yellow" aria-label="Yellow pad"></button>
+      <button type="button" class="btn pad-purple" id="purple" aria-label="Purple pad"></button>
+      <button type="button" class="btn pad-green" id="green" aria-label="Green pad"></button>
+
+      <div class="pad-center" aria-hidden="true">
+        <span id="centerLevel">0</span>
+      </div>
+    </div>
+
+    <p class="hint-text">Use mouse/touch, or keys <kbd>Q</kbd> <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd></p>
+  </section>
+
+  <!-- ============ SCREEN 3: GAME OVER ============ -->
+  <section id="gameOverScreen" class="screen game-over-screen hidden" aria-labelledby="gameOverHeading">
+    <div class="game-over-card">
+      <p class="eyebrow" id="gameOverEyebrow">RUN COMPLETE</p>
+      <h2 id="gameOverHeading" class="game-over-title">Game Over</h2>
+      <p class="game-over-player" id="gameOverPlayer"></p>
+
+      <div class="game-over-stats">
+        <div class="result-stat">
+          <span class="hud-label">Final Score</span>
+          <span class="result-value" id="finalScore">0</span>
+        </div>
+        <div class="result-stat">
+          <span class="hud-label">High Score</span>
+          <span class="result-value result-value--gold" id="finalHighScore">0</span>
+        </div>
+      </div>
+
+      <p class="motivation-text" id="motivationText"></p>
+
+      <div class="game-over-actions">
+        <button id="playAgainBtn" class="btn-primary" type="button">Play Again</button>
+        <button id="changePlayerBtn" class="btn-secondary" type="button">Change Player</button>
+      </div>
+
+      <button id="viewLeaderboardGameOver" class="btn-text" type="button">View Leaderboard →</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ LEADERBOARD PANEL (overlay, available from any screen) ============ -->
+<aside id="leaderboardPanel" class="leaderboard-panel hidden" aria-labelledby="leaderboardTitle">
+  <div class="leaderboard-card">
+    <div class="leaderboard-header">
+      <h2 id="leaderboardTitle">Top 10 Scores</h2>
+      <button id="closeLeaderboard" class="icon-btn" type="button" aria-label="Close leaderboard">✕</button>
+    </div>
+    <ol id="leaderboardList" class="leaderboard-list"></ol>
+    <p id="leaderboardEmpty" class="leaderboard-empty hidden">No scores yet — be the first to set one!</p>
+  </div>
+</aside>
+
+<!-- ============ LEVEL-UP TOAST NOTIFICATION ============ -->
+<div id="levelToast" class="level-toast hidden" role="status">
+  <span id="levelToastText">Level 1</span>
+</div>
+
+<!-- ============ PAUSE OVERLAY ============ -->
+<div id="pauseOverlay" class="pause-overlay hidden">
+  <div class="pause-card">
+    <h2>Paused</h2>
+    <button id="resumeBtn" class="btn-primary" type="button">Resume</button>
+  </div>
+</div>
+
+<!-- Confetti canvas for milestone celebrations -->
+<canvas id="confettiCanvas" class="confetti-canvas" aria-hidden="true"></canvas>
+
+<script src="app.js"></script>
+</body>
+</html>
